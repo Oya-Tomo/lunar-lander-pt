@@ -104,6 +104,17 @@ class ActorCriticAgent:
             "critic_optimizer": self.critic_optimizer.state_dict(),
         }
 
+    def save_state_dict(self, path: str):
+        torch.save(self.state_dict(), path)
+
+    def load_state_dict(self, path: str):
+        state_dict = torch.load(path)
+        self.actor_net.load_state_dict(state_dict["actor_net"])
+        self.critic_net.load_state_dict(state_dict["critic_net"])
+        self.critic_net_target.load_state_dict(state_dict["critic_net_target"])
+        self.actor_optimizer.load_state_dict(state_dict["actor_optimizer"])
+        self.critic_optimizer.load_state_dict(state_dict["critic_optimizer"])
+
     def select_action(self, state: torch.Tensor, train: bool) -> torch.Tensor:
         state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
         if train:
