@@ -117,8 +117,7 @@ def train():
             if not os.path.exists("checkpoints"):
                 os.makedirs("checkpoints")
 
-            torch.save(
-                agent.state_dict(),
+            agent.save_state_dict(
                 f"checkpoints/checkpoint{epoch}.pth",
             )
             print(f"Models saved at epoch {epoch}.")
