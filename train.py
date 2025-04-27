@@ -41,7 +41,6 @@ def train():
         config=ModelConfig(
             state_dim=env.state_dim,
             action_dim=env.action_dim,
-            hidden_dim=256,
             learning_rate=0.0005,
             gamma=0.99,
             tau=0.01,
