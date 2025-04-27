@@ -10,21 +10,20 @@ from torch.nn import functional as F
 class ModelConfig:
     state_dim: int
     action_dim: int
-    hidden_dim: int = 256
     learning_rate: float = 0.001
     gamma: float = 0.99
     tau: float = 0.01
 
 
 class ActorNet(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim):
+    def __init__(self, state_dim, action_dim):
         super(ActorNet, self).__init__()
 
-        self.linear1 = nn.Linear(state_dim, hidden_dim)
-        self.linear2 = nn.Linear(hidden_dim, hidden_dim)
+        self.linear1 = nn.Linear(state_dim, 256)
+        self.linear2 = nn.Linear(256, 128)
 
-        self.mean_linear = nn.Linear(hidden_dim, action_dim)
-        self.log_std_linear = nn.Linear(hidden_dim, action_dim)
+        self.mean_linear = nn.Linear(128, action_dim)
+        self.log_std_linear = nn.Linear(128, action_dim)
 
     def forward(self, state: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         x = self.linear1(state)
@@ -46,12 +45,12 @@ class ActorNet(nn.Module):
 
 
 class CriticNet(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim):
+    def __init__(self, state_dim, action_dim):
         super(CriticNet, self).__init__()
 
-        self.linear1 = nn.Linear(state_dim + action_dim, hidden_dim)
-        self.linear2 = nn.Linear(hidden_dim, hidden_dim)
-        self.linear3 = nn.Linear(hidden_dim, 1)
+        self.linear1 = nn.Linear(state_dim + action_dim, 256)
+        self.linear2 = nn.Linear(256, 128)
+        self.linear3 = nn.Linear(128, 1)
 
     def forward(self, state, action):
         x = torch.cat([state, action], dim=1)
@@ -71,18 +70,15 @@ class ActorCriticAgent:
         self.actor_net = ActorNet(
             config.state_dim,
             config.action_dim,
-            config.hidden_dim,
         ).to(device)
         self.critic_net = CriticNet(
             config.state_dim,
             config.action_dim,
-            config.hidden_dim,
         ).to(device)
 
         self.critic_net_target = CriticNet(
             config.state_dim,
             config.action_dim,
-            config.hidden_dim,
         ).to(device)
         self.critic_net_target.load_state_dict(self.critic_net.state_dict())
 
