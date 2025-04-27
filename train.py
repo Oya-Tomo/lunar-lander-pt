@@ -12,7 +12,7 @@ from dataset import ReplayBufferDataset, DatasetConfig
 @dataclass
 class TrainConfig:
     epochs: int = 100000
-    episodes_per_epoch: int = 40
+    episodes_per_epoch: int = 50
     max_steps_per_episode: int = 10000
     soft_update_per_epoch: int = 5
     seed: int = 42
@@ -50,7 +50,7 @@ def train():
 
     dataset = ReplayBufferDataset(
         config=DatasetConfig(
-            max_size=100000,
+            max_size=50000,
             batch_size=512,
             shuffle=True,
             num_workers=4,
