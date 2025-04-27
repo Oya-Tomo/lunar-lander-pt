@@ -18,6 +18,7 @@ class LunarLanderV3:
             "LunarLander-v3",
             render_mode="human" if gui else None,
             continuous=True,
+            enable_wind=True,
         )
         self.env.reset(seed=42)
 
