@@ -128,41 +128,49 @@ class ActorCriticAgent:
                 + (1.0 - self.config.tau) * target_param.data
             )
 
-    def update_parameters(self, dataloader: DataLoader) -> tuple[float, float]:
+    def update_parameters(
+        self,
+        dataloader: DataLoader,
+        epoch: int,
+    ) -> tuple[float, float]:
         critic_loss_list = []
         actor_loss_list = []
 
-        for state, action, reward, next_state, done in dataloader:
-            state = state.to(self.device)
-            action = action.to(self.device)
-            reward = reward.to(self.device)
-            next_state = next_state.to(self.device)
-            done = done.to(self.device)
+        self.actor_net.train()
+        self.critic_net.train()
 
-            # Update critic
-            with torch.no_grad():
-                next_action, _ = self.actor_net.sample(next_state)
-                next_q_value = self.critic_net_target(next_state, next_action)
-                target_q = reward + (1.0 - done) * self.config.gamma * next_q_value
+        for _ in range(epoch):
+            for state, action, reward, next_state, done in dataloader:
+                state = state.to(self.device)
+                action = action.to(self.device)
+                reward = reward.to(self.device)
+                next_state = next_state.to(self.device)
+                done = done.to(self.device)
 
-            current_q = self.critic_net(state, action)
-            critic_loss = F.mse_loss(current_q, target_q)
+                # Update critic
+                with torch.no_grad():
+                    next_action, _ = self.actor_net.sample(next_state)
+                    next_q_value = self.critic_net_target(next_state, next_action)
+                    target_q = reward + (1.0 - done) * self.config.gamma * next_q_value
 
-            self.critic_optimizer.zero_grad()
-            critic_loss.backward()
-            self.critic_optimizer.step()
+                current_q = self.critic_net(state, action)
+                critic_loss = F.mse_loss(current_q, target_q)
 
-            # Update actor
-            action, _ = self.actor_net.sample(state)
-            q_value = self.critic_net(state, action)
-            actor_loss: torch.Tensor = -q_value.mean()
+                self.critic_optimizer.zero_grad()
+                critic_loss.backward()
+                self.critic_optimizer.step()
 
-            self.actor_optimizer.zero_grad()
-            actor_loss.backward()
-            self.actor_optimizer.step()
+                # Update actor
+                action, _ = self.actor_net.sample(state)
+                q_value = self.critic_net(state, action)
+                actor_loss: torch.Tensor = -q_value.mean()
 
-            critic_loss_list.append(critic_loss.item())
-            actor_loss_list.append(actor_loss.item())
+                self.actor_optimizer.zero_grad()
+                actor_loss.backward()
+                self.actor_optimizer.step()
+
+                critic_loss_list.append(critic_loss.item())
+                actor_loss_list.append(actor_loss.item())
 
         critic_loss_avg = sum(critic_loss_list) / len(critic_loss_list)
         actor_loss_avg = sum(actor_loss_list) / len(actor_loss_list)

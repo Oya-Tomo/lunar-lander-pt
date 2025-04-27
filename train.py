@@ -59,7 +59,7 @@ def train():
     )
 
     print("Filling replay buffer with random actions...")
-    while len(dataset) < 100000:
+    while len(dataset) < 50000:
         state, _ = env.reset()
         for _ in range(train_config.max_steps_per_episode):
             action = env.sample()
@@ -96,7 +96,7 @@ def train():
             rewards.append(episode_reward)
 
         dataloader = dataset.create_dataloader()
-        critic_loss, actor_loss = agent.update_parameters(dataloader)
+        critic_loss, actor_loss = agent.update_parameters(dataloader, 20)
 
         if epoch % train_config.soft_update_per_epoch == 0:
             agent.soft_update()

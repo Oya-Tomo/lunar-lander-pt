@@ -40,4 +40,4 @@ def eval(path: str):
 
 
 if __name__ == "__main__":
-    eval("checkpoints/checkpoint399.pth")
+    eval("checkpoints/checkpoint5819.pth")
